@@ -30,11 +30,11 @@
         runs-on: ubuntu-latest
         steps:
           - name: Checkout
-            uses: actions/checkout@v3
-          - name: Pull in dev.to posts
-            uses: gautamkrishnar/blog-post-workflow@v1
+            uses: actions/checkout@v4
+          - name: Pull in eplus.dev posts
+            uses: ePlus-DEV/blog-post-workflow@v1
             with:
-              feed_list: "https://dev.to/feed/gautamkrishnar,https://www.gautamkrishnar.com/feed/"
+              feed_list: "https://eplus.dev/rss.xml"
     ```
 6. Replace the above URL list with your own RSS feed URLs. See [popular-sources](#popular-sources) for a list of common RSS feed urls. Commit the changes.
 7. Go to repository settings, Click on Actions > General. Update the "Workflow permissions" to "Read and write permissions". Click on save.
