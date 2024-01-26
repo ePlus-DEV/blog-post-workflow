@@ -1,4 +1,4 @@
-# Blog post workflow  [![Build and test](https://github.com/ePlus-DEV/blog-post-workflow/workflows/Build%20and%20test/badge.svg?branch=master)](https://github.com/ePlus-DEV/blog-post-workflow/actions?query=workflow%3A%22Build+and+test%22)
+# Blog post workflow  [![Build and test](https://github.com/ePlus-DEV/blog-post-workflow/actions/workflows/build.yml/badge.svg)](https://github.com/ePlus-DEV/blog-post-workflow/actions/workflows/build.yml)
 
 ![preview](https://github.com/ePlus-DEV/blog-post-workflow/assets/11882322/776c0302-87e5-4458-bd03-747dceca6ef4)
 
