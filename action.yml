@@ -1,5 +1,5 @@
 name: 'Blog Post Workflow'
-author: 'Gautam Krishna R'
+author: 'David Nguyen'
 description: 'Allows you to show your latest blog posts on your github profile or project readme'
 
 inputs:
@@ -130,7 +130,7 @@ outputs:
     description: "JSON stringified array of posts"
 
 runs:
-  using: node16
+  using: node18
   main: dist/blog-post-workflow.js
 branding:
   icon: 'activity'
