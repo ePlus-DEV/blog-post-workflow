@@ -1,6 +1,6 @@
 name: 'GitHub Blog Post Workflow'
 author: 'David Nguyen'
-description: 'Show latest blog posts on GitHub profile or readme. Inputs include access token, readme paths, max post count, feed list, sorting/filtering options, templates, customization options.'
+description: 'Show latest blog posts on GitHub profile or readme.'
 
 inputs:
   gh_token:
