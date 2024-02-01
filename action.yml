@@ -1,6 +1,6 @@
 name: 'GitHub Blog Post Workflow'
 author: 'David Nguyen'
-description: 'Allows you to show your latest blog posts on your github profile or project readme. The action has several inputs, including a GitHub access token, paths of the readme files to update, the maximum number of posts to show, a list of RSS feed URLs, options for sorting and filtering comments, templates for post formatting, and customization options for date format, user agent, accept header, and more.'
+description: 'Show latest blog posts on GitHub profile or readme. Inputs include access token, readme paths, max post count, feed list, sorting/filtering options, templates, customization options.'
 
 inputs:
   gh_token:
