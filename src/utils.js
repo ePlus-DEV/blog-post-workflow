@@ -114,6 +114,7 @@ const commitReadme = async (githubToken, readmeFilePaths) => {
   await exec('git', ['config', '--global', 'user.name', committerUsername]);
   await exec('git', ['add', ...readmeFilePaths]);
   await exec('git', ['commit', '-m', commitMessage]);
+  await exec('git', ['pull', '--rebase', '--autostash']);
   await exec('git', ['push']);
   core.info('Readme updated successfully in the upstream repository');
 };
