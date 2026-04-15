@@ -103,6 +103,10 @@ const commitReadme = async (githubToken, readmeFilePaths) => {
 	const committerUsername = core.getInput('committer_username');
 	const committerEmail = core.getInput('committer_email');
 	const commitMessage = core.getInput('commit_message');
+	const pushRetryCount =
+		Number.parseInt(core.getInput('push_retry_count'), 10) || 3;
+	const branchName =
+		process.env.GITHUB_REF_NAME || process.env.GITHUB_HEAD_REF || 'main';
 	// Doing commit and push
 	await exec('git', ['config', '--global', 'user.email', committerEmail]);
 	if (githubToken) {
@@ -117,7 +121,23 @@ const commitReadme = async (githubToken, readmeFilePaths) => {
 	await exec('git', ['config', '--global', 'user.name', committerUsername]);
 	await exec('git', ['add', ...readmeFilePaths]);
 	await exec('git', ['commit', '-m', commitMessage]);
-	await exec('git', ['push']);
+	let pushTry = 0;
+	while (pushTry <= pushRetryCount) {
+		try {
+			await exec('git', ['push']);
+			core.info('Readme updated successfully in the upstream repository');
+			return;
+		} catch (err) {
+			pushTry = pushTry + 1;
+			if (pushTry > pushRetryCount) {
+				throw err;
+			}
+			core.warning(
+				`git push failed (attempt ${pushTry}/${pushRetryCount}). Pulling latest changes and retrying...`,
+			);
+			await exec('git', ['pull', '--rebase', 'origin', branchName]);
+		}
+	}
 	core.info('Readme updated successfully in the upstream repository');
 };
 

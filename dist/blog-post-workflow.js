@@ -13325,7 +13325,7 @@ var require_fetch = __commonJS({
     function handleFetchDone(response) {
       finalizeAndReportTiming(response, "fetch");
     }
-    function fetch(input, init = void 0) {
+    function fetch2(input, init = void 0) {
       webidl.argumentLengthCheck(arguments, 1, "globalThis.fetch");
       let p = createDeferredPromise();
       let requestObject;
@@ -14282,7 +14282,7 @@ var require_fetch = __commonJS({
       }
     }
     module.exports = {
-      fetch,
+      fetch: fetch2,
       Fetch,
       fetching,
       finalizeAndReportTiming
@@ -18540,7 +18540,7 @@ var require_undici = __commonJS({
     module.exports.setGlobalDispatcher = setGlobalDispatcher;
     module.exports.getGlobalDispatcher = getGlobalDispatcher;
     var fetchImpl = require_fetch().fetch;
-    module.exports.fetch = async function fetch(init, options = void 0) {
+    module.exports.fetch = async function fetch2(init, options = void 0) {
       try {
         return await fetchImpl(init, options);
       } catch (err) {
@@ -19393,16 +19393,16 @@ var require_dist_node5 = __commonJS({
       let headers = {};
       let status;
       let url;
-      let { fetch } = globalThis;
+      let { fetch: fetch2 } = globalThis;
       if ((_b = requestOptions.request) == null ? void 0 : _b.fetch) {
-        fetch = requestOptions.request.fetch;
+        fetch2 = requestOptions.request.fetch;
       }
-      if (!fetch) {
+      if (!fetch2) {
         throw new Error(
           "fetch is not set. Please pass a fetch implementation as new Octokit({ request: { fetch }}). Learn more at https://github.com/octokit/octokit.js/#fetch-missing"
         );
       }
-      return fetch(requestOptions.url, {
+      return fetch2(requestOptions.url, {
         method: requestOptions.method,
         body: requestOptions.body,
         redirect: (_c = requestOptions.request) == null ? void 0 : _c.redirect,
@@ -30655,6 +30655,8 @@ var commitReadme = async (githubToken, readmeFilePaths) => {
   const committerUsername = getInput("committer_username");
   const committerEmail = getInput("committer_email");
   const commitMessage = getInput("commit_message");
+  const pushRetryCount = Number.parseInt(getInput("push_retry_count"), 10) || 3;
+  const branchName = process.env.GITHUB_REF_NAME || process.env.GITHUB_HEAD_REF || "main";
   await exec("git", ["config", "--global", "user.email", committerEmail]);
   if (githubToken) {
     await exec("git", [
@@ -30667,7 +30669,23 @@ var commitReadme = async (githubToken, readmeFilePaths) => {
   await exec("git", ["config", "--global", "user.name", committerUsername]);
   await exec("git", ["add", ...readmeFilePaths]);
   await exec("git", ["commit", "-m", commitMessage]);
-  await exec("git", ["push"]);
+  let pushTry = 0;
+  while (pushTry <= pushRetryCount) {
+    try {
+      await exec("git", ["push"]);
+      info("Readme updated successfully in the upstream repository");
+      return;
+    } catch (err) {
+      pushTry = pushTry + 1;
+      if (pushTry > pushRetryCount) {
+        throw err;
+      }
+      warning(
+        `git push failed (attempt ${pushTry}/${pushRetryCount}). Pulling latest changes and retrying...`
+      );
+      await exec("git", ["pull", "--rebase", "origin", branchName]);
+    }
+  }
   info("Readme updated successfully in the upstream repository");
 };
 var updateAndParseCompoundParams = (sourceWithParam, obj) => {
@@ -30787,6 +30805,17 @@ var retryConfig = {
   factor: 1,
   minTimeout: Number.parseInt(getInput("retry_wait_time"), 10) * 1e3
 };
+var REQUEST_TIMEOUT = Number.parseInt(getInput("request_timeout"), 10) || 30;
+var RETRY_WAIT_SECONDS = retryConfig.minTimeout / 1e3;
+info(
+  `Feed request config -> timeout: ${REQUEST_TIMEOUT}s, retries: ${retryConfig.retries}, retry_wait_time: ${RETRY_WAIT_SECONDS}s`
+);
+if (retryConfig.retries > 0) {
+  const worstCasePerFeedSeconds = REQUEST_TIMEOUT * (retryConfig.retries + 1) + RETRY_WAIT_SECONDS * retryConfig.retries;
+  info(
+    `Estimated worst-case wait per feed: ~${worstCasePerFeedSeconds}s before moving on.`
+  );
+}
 setSecret(GITHUB_TOKEN);
 for (let item of getInput("custom_tags").trim().split(",")) {
   item = item.trim();
@@ -30817,6 +30846,56 @@ var parser = new import_rss_parser.default({
     item: [...customTagArgs]
   }
 });
+var PARSE_XML_ERROR_MESSAGE = "Unable to parse XML";
+var isXmlParseError = (err) => typeof err?.message === "string" && err.message.includes(PARSE_XML_ERROR_MESSAGE);
+var shouldRetryFeedRequest = (err) => !isXmlParseError(err);
+var sanitizeXml = (xmlText) => xmlText.replace(/^\uFEFF/, "").replace(/^[^<]*/, "").split("").filter((char) => {
+  const charCode = char.charCodeAt(0);
+  if (charCode <= 31 || charCode === 127) {
+    return charCode === 9 || charCode === 10 || charCode === 13;
+  }
+  return true;
+}).join("").replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, "&amp;");
+var fetchFeedXml = async (siteUrl) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT * 1e3);
+  try {
+    const response = await fetch(siteUrl, {
+      headers: {
+        "User-Agent": userAgent,
+        Accept: acceptHeader
+      },
+      signal: controller.signal
+    });
+    if (!response.ok) {
+      throw new Error(`Status code ${response.status}`);
+    }
+    return response.text();
+  } catch (err) {
+    if (err.name === "AbortError") {
+      throw new Error(
+        `Request timeout after ${REQUEST_TIMEOUT}s while fetching ${siteUrl}`
+      );
+    }
+    throw err;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+var parseFeed = async (siteUrl) => {
+  const xmlText = await fetchFeedXml(siteUrl);
+  try {
+    return await parser.parseString(xmlText);
+  } catch (err) {
+    if (!isXmlParseError(err)) {
+      throw err;
+    }
+    warning(
+      `XML parse failed for ${siteUrl}. Retrying with sanitized XML fallback.`
+    );
+    return parser.parseString(sanitizeXml(xmlText));
+  }
+};
 for (const siteUrl of feedList) {
   runnerNameArray.push(siteUrl);
   promiseArray.push(
@@ -30827,7 +30906,12 @@ for (const siteUrl of feedList) {
             `Previous try for ${siteUrl} failed, retrying: ${tryNumber - 1}`
           );
         }
-        return parser.parseURL(siteUrl).catch(retry);
+        return parseFeed(siteUrl).catch((err) => {
+          if (shouldRetryFeedRequest(err)) {
+            retry(err);
+          }
+          throw err;
+        });
       }, retryConfig).then(
         (data) => {
           if (!data.items) {

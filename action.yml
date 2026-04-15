@@ -101,6 +101,14 @@ inputs:
     description: "Time to wait before each retry operation in seconds"
     default: "1"
     required: false
+  request_timeout:
+    description: "Timeout for each feed request in seconds"
+    default: "30"
+    required: false
+  push_retry_count:
+    description: "Retry count for git push when remote has new commits (non-fast-forward)"
+    default: "3"
+    required: false
   feed_names:
     description: "Comma separated name of the feeds to show on template"
     default: ""
