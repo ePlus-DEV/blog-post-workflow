@@ -36,7 +36,7 @@ const runAndCompareSnap = async (README_FILE, envObjParam) => {
 		...envObj,
 	};
 	const workflow = await import(
-		`${pathToFileURL(TEST_FILE).href}?cacheBust=${Date.now()}-${Math.random()}`,
+		`${pathToFileURL(TEST_FILE).href}?cacheBust=${Date.now()}-${Math.random()}`
 	);
 	await workflow.runWorkflow();
 	const snapshot = fs.readFileSync(
