@@ -118,6 +118,48 @@ const parser = new Parser({
 	},
 });
 
+const PARSE_XML_ERROR_MESSAGE = 'Unable to parse XML';
+
+const isXmlParseError = (err) =>
+	typeof err?.message === 'string' &&
+	err.message.includes(PARSE_XML_ERROR_MESSAGE);
+
+const shouldRetryFeedRequest = (err) => !isXmlParseError(err);
+
+const sanitizeXml = (xmlText) =>
+	xmlText
+		.replace(/^\uFEFF/, '')
+		.replace(/^[^<]*/, '')
+		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
+		.replace(
+			/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g,
+			'&amp;',
+		);
+
+const parseFeed = async (siteUrl) => {
+	try {
+		return await parser.parseURL(siteUrl);
+	} catch (err) {
+		if (!isXmlParseError(err)) {
+			throw err;
+		}
+		core.warning(
+			`XML parse failed for ${siteUrl}. Retrying with sanitized XML fallback.`,
+		);
+		const response = await fetch(siteUrl, {
+			headers: {
+				'User-Agent': userAgent,
+				Accept: acceptHeader,
+			},
+		});
+		if (!response.ok) {
+			throw new Error(`Status code ${response.status}`);
+		}
+		const xmlText = await response.text();
+		return parser.parseString(sanitizeXml(xmlText));
+	}
+};
+
 // Generating promise array
 for (const siteUrl of feedList) {
 	runnerNameArray.push(siteUrl);
@@ -130,7 +172,12 @@ for (const siteUrl of feedList) {
 						`Previous try for ${siteUrl} failed, retrying: ${tryNumber - 1}`,
 					);
 				}
-				return parser.parseURL(siteUrl).catch(retry);
+				return parseFeed(siteUrl).catch((err) => {
+					if (shouldRetryFeedRequest(err)) {
+						retry(err);
+					}
+					throw err;
+				});
 			}, retryConfig).then(
 				(data) => {
 					if (!data.items) {

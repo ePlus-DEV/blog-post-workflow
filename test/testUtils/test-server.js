@@ -53,6 +53,15 @@ http
 			sendResponse(res, 200, emptyTagResponse);
 		} else if (req.url === '/duplicates') {
 			sendResponse(res, 200, duplicateXmlData);
+		} else if (req.url === '/malformed-xml') {
+			// Simulates a feed with malformed XML that can be recovered by sanitization.
+			const invalidXml = xmlData
+				.replace(
+					'God Mode in browsers: document.designMode = "on"',
+					'God Mode & tricks in browsers: document.designMode = "on"',
+				)
+				.replace('<?xml version="1.0" encoding="UTF-8"?>', '');
+			sendResponse(res, 200, `\uFEFFgarbage before xml\n${invalidXml}`);
 		} else {
 			sendResponse(res, 200, xmlData);
 		}
