@@ -353,11 +353,3 @@ Make sure that you follow [CODE_OF_CONDUCT.md](/CODE_OF_CONDUCT.md) while contri
 ## Bugs
 
 If you are experiencing any bugs, don't forget to open a [new issue](https://github.com/ePlus-DEV/blog-post-workflow@v1/issues/new).
-
-## Liked it?
-
-Hope you liked this project, don't forget to give it a star ⭐.
-
-<a href="https://starchart.cc/ePlus-DEV/blog-post-workflow@v1">
-    <img alt="chart" src="https://starchart.cc/ePlus-DEV/blog-post-workflow@v1.svg" width="600px">
-</a>
