@@ -3,12 +3,17 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - "**.js"
-      - "package.json"
+      - '**.js'
+      - 'package.json'
+      - '.github/workflows/build.yml'
   pull_request:
     paths:
-      - "**.js"
-      - "package.json"
+      - '**.js'
+      - 'package.json'
+permissions:
+  contents: read
+  actions: read
+  checks: write
 jobs:
   test:
     if: |
@@ -17,11 +22,18 @@ jobs:
     name: Generate build and test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: "18"
+          node-version-file: ".nvmrc"
           cache: "yarn"
       - run: yarn install --frozen-lockfile
-      - run: yarn test
-      - run: yarn build && yarn run test-dist
+      - run: yarn test-ci
+      - run: yarn build && yarn test-dist-ci
+      - name: Test Report
+        uses: dorny/test-reporter@v3
+        if: ${{ github.repository == 'gautamkrishnar/blog-post-workflow' && github.event_name != 'pull_request' && (success() || failure()) }}
+        with:
+          name: Mocha Tests
+          path: "*-report.json"
+          reporter: mocha-json

@@ -1,12 +1,13 @@
-const {DEFAULT_TEST_ENV} = require('./testUtils/default-env');
-const {runAndCompareSnap} = require('./testUtils/testUtils');
-describe('Generated readme with $emojiKey template', function () {
-  it('should match the snapshot', async function () {
-    const envObj = {
-      ...process.env,
-      ...DEFAULT_TEST_ENV,
-      INPUT_TEMPLATE: '- $emojiKey(💯,🔥)'
-    };
-    await runAndCompareSnap('Readme.emojiKey.md', envObj);
-  });
+import { DEFAULT_TEST_ENV } from './testUtils/default-env.js';
+import { runAndCompareSnap } from './testUtils/testUtils.js';
+
+describe('Generated readme with $emojiKey template', () => {
+	it('should match the snapshot', async () => {
+		const envObj = {
+			...process.env,
+			...DEFAULT_TEST_ENV,
+			INPUT_TEMPLATE: '- $emojiKey(💯,🔥)',
+		};
+		await runAndCompareSnap('Readme.emojiKey.md', envObj);
+	});
 });

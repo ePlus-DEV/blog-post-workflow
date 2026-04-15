@@ -1,18 +1,24 @@
 {
   "name": "blog-post-workflow",
-  "version": "1.8.5",
+  "version": "1.9.5",
   "description": "Allows you to show your latest blog posts on your github profile or project readme",
   "main": "blog-post-workflow.js",
+  "type": "module",
   "scripts": {
-    "build": "esbuild ./src/blog-post-workflow.js  --bundle --platform=node --outfile=dist/blog-post-workflow.js",
-    "lint": "jshint --exclude='node_modules/' *.js",
+    "build": "esbuild ./src/blog-post-workflow.js --bundle --platform=node --format=esm --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\" --outfile=dist/blog-post-workflow.js",
+    "lint": "biome check",
+    "lint:fix": "biome check --write",
     "start-server": "node test/testUtils/test-server.js",
-    "local-run-script": "node local-run.js",
-    "local-run": "start-server-and-test start-server http://localhost:8080 local-run-script",
-    "test-run": "mocha --parallel --jobs 100 test/**.js",
+    "local-run": "start-server-and-test start-server http://localhost:8080 'node local-run.js'",
+    "test-run": "mocha --require test/setup.cjs --parallel --reporter spec --jobs 100 test/**.js",
+    "test-run-ci": "mocha --require test/setup.cjs --parallel --reporter json --reporter-option output=src-report.json --jobs 100 test/**.js",
     "test": "yarn run lint && start-server-and-test start-server http://localhost:8080 test-run",
-    "test-run-dist": "DIST=true mocha --parallel --jobs 100 test/**.js",
-    "test-dist": "yarn run lint && start-server-and-test start-server http://localhost:8080 test-run-dist"
+    "test-ci": "yarn run lint && start-server-and-test start-server http://localhost:8080 test-run-ci",
+    "test-run-dist": "DIST=true mocha --require test/setup.cjs --parallel --reporter spec --jobs 100 test/**.js",
+    "test-run-dist-ci": "DIST=true mocha --require test/setup.cjs --parallel --reporter json --reporter-option output=dist-report.json --jobs 100 test/**.js",
+    "test-dist": "yarn run lint && start-server-and-test start-server http://localhost:8080 test-run-dist",
+    "test-dist-ci": "yarn run lint && start-server-and-test start-server http://localhost:8080 test-run-dist-ci",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -31,18 +37,18 @@
   },
   "homepage": "https://github.com/gautamkrishnar/blog-post-workflow#readme",
   "dependencies": {
-    "@actions/core": "^1.10.1",
-    "dateformat": "^3.0.3",
-    "esbuild": "^0.19.6",
-    "keepalive-workflow": "^1.1.0",
-    "process": "latest",
+    "@actions/core": "^3.0.0",
+    "dateformat": "^5.0.3",
+    "esbuild": "^0.28.0",
+    "keepalive-workflow": "^2.0.9",
     "promise-retry": "^2.0.1",
     "random-seed": "^0.3.0",
     "rss-parser": "^3.13.0"
   },
   "devDependencies": {
-    "jshint": "^2.12.0",
-    "mocha": "^10.2.0",
-    "start-server-and-test": "^1.11.3"
+    "@biomejs/biome": "2.4.11",
+    "husky": "^9.1.7",
+    "mocha": "^11.7.5",
+    "start-server-and-test": "^3.0.2"
   }
 }

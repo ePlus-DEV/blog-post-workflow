@@ -5,15 +5,17 @@ on:
       tag_name:
         description: "Version"
         required: true
+permissions:
+  contents: write
 jobs:
   version-bump:
     name: Update dist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
         with:
-          node-version: "16"
+          node-version-file: ".nvmrc"
       - name: Install dependancies
         run: yarn install
       - name: Build source code

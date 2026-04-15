@@ -23,9 +23,17 @@ inputs:
     description: "Disables the sorting of list based on publish date"
     default: "false"
     required: false
+  sort_order:
+    description: "Specifies the sort order of posts when date sorting is enabled (disable_sort is 'false'). Supports 'asc' (ascending, oldest first) and 'desc' (descending, newest first). Has no effect if disable_sort is 'true'."
+    default: "desc"
+    required: false
+  reverse_order:
+    description: "Reverses the order of posts when `disable_sort` is set to true"
+    default: "false"
+    required: false
   filter_comments:
     description: "Comma separated list of platforms you want to enable the comment filter"
-    default: "medium,stackoverflow/Comment by $author/,stackexchange/Comment by $author/"
+    default: "stackoverflow/Comment by $author/,stackexchange/Comment by $author/"
     required: false
   tag_post_pre_newline:
     description: "Inserts newline before the closing tag and after the opening tag when using the template option, for formatting"
@@ -125,12 +133,16 @@ inputs:
     description: "Skips committing the changes to repo"
     default: "false"
     required: false
+  dummy_commit_message:
+    description: "Dummy commit message, This is when the workflow is doing automated commits to keep the repository active"
+    default: "dummy commit to keep the repository active, see https://git.io/Jtm4V"
+    required: false
 outputs:
   results:
     description: "JSON stringified array of posts"
 
 runs:
-  using: node20
+  using: node24
   main: dist/blog-post-workflow.js
 branding:
   icon: 'activity'
