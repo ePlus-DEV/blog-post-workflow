@@ -77,7 +77,8 @@ const retryConfig = {
 	factor: 1,
 	minTimeout: Number.parseInt(core.getInput('retry_wait_time'), 10) * 1000,
 };
-const REQUEST_TIMEOUT = Number.parseInt(core.getInput('request_timeout'), 10) || 30;
+const REQUEST_TIMEOUT =
+	Number.parseInt(core.getInput('request_timeout'), 10) || 30;
 const RETRY_WAIT_SECONDS = retryConfig.minTimeout / 1000;
 
 core.info(
