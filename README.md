@@ -1,4 +1,4 @@
-# Blog post workflow  [![Build and test](https://github.com/ePlus-DEV/blog-post-workflow@v1/workflows/Build%20and%20test/badge.svg?branch=master)](https://github.com/ePlus-DEV/blog-post-workflow@v1/actions?query=workflow%3A%22Build+and+test%22)
+# Blog post workflow  [![Build and test](https://github.com/ePlus-DEV/blog-post-workflow/workflows/Build%20and%20test/badge.svg?branch=master)](https://github.com/ePlus-DEV/blog-post-workflow/actions?query=workflow%3A%22Build+and+test%22)
 
 ![preview](https://github.com/ePlus-DEV/blog-post-workflow/assets/11882322/776c0302-87e5-4458-bd03-747dceca6ef4)
 
@@ -46,7 +46,7 @@
 
 7. Go to repository settings, Click on Actions > General. Update the "Workflow permissions" to "Read and write permissions". Click on save.
 
-   ![Workflow permissions](https://github.com/ePlus-DEV/blog-post-workflow@v1/assets/8397274/26d4c089-dc58-4309-b65a-2acb9a3c08ba)
+   ![Workflow permissions](https://github.com/ePlus-DEV/blog-post-workflow/assets/8397274/26d4c089-dc58-4309-b65a-2acb9a3c08ba)
 8. Wait for it to run automatically, or you can also trigger it manually to see the result instantly. To trigger the workflow manually, please follow the steps in the [video](https://www.youtube.com/watch?v=ECuqb5Tv9qI&t=272s).
 
 ## Options
