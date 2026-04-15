@@ -118,6 +118,54 @@ const parser = new Parser({
 	},
 });
 
+const PARSE_XML_ERROR_MESSAGE = 'Unable to parse XML';
+
+const isXmlParseError = (err) =>
+	typeof err?.message === 'string' &&
+	err.message.includes(PARSE_XML_ERROR_MESSAGE);
+
+const shouldRetryFeedRequest = (err) => !isXmlParseError(err);
+
+const sanitizeXml = (xmlText) =>
+	xmlText
+		.replace(/^\uFEFF/, '')
+		.replace(/^[^<]*/, '')
+		.split('')
+		.filter((char) => {
+			const charCode = char.charCodeAt(0);
+			// XML 1.0 valid control chars: tab(9), LF(10), CR(13)
+			if (charCode <= 31 || charCode === 127) {
+				return charCode === 9 || charCode === 10 || charCode === 13;
+			}
+			return true;
+		})
+		.join('')
+		.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, '&amp;');
+
+const parseFeed = async (siteUrl) => {
+	try {
+		return await parser.parseURL(siteUrl);
+	} catch (err) {
+		if (!isXmlParseError(err)) {
+			throw err;
+		}
+		core.warning(
+			`XML parse failed for ${siteUrl}. Retrying with sanitized XML fallback.`,
+		);
+		const response = await fetch(siteUrl, {
+			headers: {
+				'User-Agent': userAgent,
+				Accept: acceptHeader,
+			},
+		});
+		if (!response.ok) {
+			throw new Error(`Status code ${response.status}`);
+		}
+		const xmlText = await response.text();
+		return parser.parseString(sanitizeXml(xmlText));
+	}
+};
+
 // Generating promise array
 for (const siteUrl of feedList) {
 	runnerNameArray.push(siteUrl);
@@ -130,7 +178,12 @@ for (const siteUrl of feedList) {
 						`Previous try for ${siteUrl} failed, retrying: ${tryNumber - 1}`,
 					);
 				}
-				return parser.parseURL(siteUrl).catch(retry);
+				return parseFeed(siteUrl).catch((err) => {
+					if (shouldRetryFeedRequest(err)) {
+						retry(err);
+					}
+					throw err;
+				});
 			}, retryConfig).then(
 				(data) => {
 					if (!data.items) {
