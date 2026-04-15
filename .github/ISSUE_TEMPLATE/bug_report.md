@@ -27,5 +27,5 @@ Add any other context about the problem here.
 ### Double check the following
 Before opening a bug, Please make sure that you had done the following, add a checkmark if done by marking it with `[x]`:
 
-- [ ] I had gone through the [FAQs](https://github.com/gautamkrishnar/blog-post-workflow#faqs-and-common-issues) 
-- [ ] I had followed all the steps mentioned in the [documentation](https://github.com/gautamkrishnar/blog-post-workflow)
+- [ ] I had gone through the [FAQs](https://github.com/ePlus-DEV/blog-post-workflow@v1#faqs-and-common-issues) 
+- [ ] I had followed all the steps mentioned in the [documentation](https://github.com/ePlus-DEV/blog-post-workflow@v1)

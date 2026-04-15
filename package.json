@@ -22,7 +22,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gautamkrishnar/blog-post-workflow.git"
+    "url": "git+https://github.com/ePlus-DEV/blog-post-workflow@v1.git"
   },
   "keywords": [
     "github",
@@ -33,9 +33,9 @@
   "author": "Gautam krishna R <r.gautamkrishna@gmail.com> (https://www.github.com/gautamkrishnar)",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/gautamkrishnar/blog-post-workflow/issues"
+    "url": "https://github.com/ePlus-DEV/blog-post-workflow@v1/issues"
   },
-  "homepage": "https://github.com/gautamkrishnar/blog-post-workflow#readme",
+  "homepage": "https://github.com/ePlus-DEV/blog-post-workflow@v1#readme",
   "dependencies": {
     "@actions/core": "^3.0.0",
     "dateformat": "^5.0.3",

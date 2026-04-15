@@ -3,13 +3,13 @@ on:
   workflow_dispatch:
   push:
     paths:
-      - '**.js'
-      - 'package.json'
-      - '.github/workflows/build.yml'
+      - "**.js"
+      - "package.json"
+      - ".github/workflows/build.yml"
   pull_request:
     paths:
-      - '**.js'
-      - 'package.json'
+      - "**.js"
+      - "package.json"
 permissions:
   contents: read
   actions: read
@@ -32,7 +32,7 @@ jobs:
       - run: yarn build && yarn test-dist-ci
       - name: Test Report
         uses: dorny/test-reporter@v3
-        if: ${{ github.repository == 'gautamkrishnar/blog-post-workflow' && github.event_name != 'pull_request' && (success() || failure()) }}
+        if: ${{ github.repository == 'ePlus-DEV/blog-post-workflow@v1' && github.event_name != 'pull_request' && (success() || failure()) }}
         with:
           name: Mocha Tests
           path: "*-report.json"

@@ -13,7 +13,7 @@ If you discover a security vulnerability in this project, we strongly encourage 
 
 **Please do not create public GitHub issues or pull requests that contain security-related information.**
 
-Instead, please email your report via GitHub Vulnerability reporting: https://github.com/gautamkrishnar/blog-post-workflow/security/advisories/new
+Instead, please email your report via GitHub Vulnerability reporting: https://github.com/ePlus-DEV/blog-post-workflow@v1/security/advisories/new
 
 I will review your report as quickly as possible and take appropriate action.
 
