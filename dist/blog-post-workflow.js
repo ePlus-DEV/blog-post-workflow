@@ -30656,6 +30656,7 @@ var commitReadme = async (githubToken, readmeFilePaths) => {
   const committerEmail = getInput("committer_email");
   const commitMessage = getInput("commit_message");
   const pushRetryCount = Number.parseInt(getInput("push_retry_count"), 10) || 3;
+  const pushRetryWaitTime = Number.parseInt(getInput("retry_wait_time"), 10) || 1;
   const branchName = process.env.GITHUB_REF_NAME || process.env.GITHUB_HEAD_REF || "main";
   await exec("git", ["config", "--global", "user.email", committerEmail]);
   if (githubToken) {
@@ -30672,7 +30673,7 @@ var commitReadme = async (githubToken, readmeFilePaths) => {
   let pushTry = 0;
   while (pushTry <= pushRetryCount) {
     try {
-      await exec("git", ["push"]);
+      await exec("git", ["push", "origin", `HEAD:${branchName}`]);
       info("Readme updated successfully in the upstream repository");
       return;
     } catch (err) {
@@ -30681,9 +30682,13 @@ var commitReadme = async (githubToken, readmeFilePaths) => {
         throw err;
       }
       warning(
-        `git push failed (attempt ${pushTry}/${pushRetryCount}). Pulling latest changes and retrying...`
+        `git push failed (attempt ${pushTry}/${pushRetryCount}). Rebasing on latest remote changes and retrying in ${pushRetryWaitTime}s...`
       );
-      await exec("git", ["pull", "--rebase", "origin", branchName]);
+      await exec("git", ["fetch", "origin", branchName]);
+      await exec("git", ["rebase", `origin/${branchName}`]);
+      await new Promise(
+        (resolve) => setTimeout(resolve, pushRetryWaitTime * 1e3)
+      );
     }
   }
   info("Readme updated successfully in the upstream repository");

@@ -105,6 +105,21 @@ If your workflow is slow, the bottleneck is usually network waiting on RSS endpo
 
 > Example worst-case per feed: with `request_timeout: 30` and `retry_count: 5`, one feed can wait up to ~`210s` (3.5 minutes) before failing.
 
+### Troubleshooting: `Unexpected input(s)` warnings
+
+If your workflow logs show:
+
+```text
+Warning: Unexpected input(s) 'request_timeout', 'push_retry_count'
+```
+
+that means the action reference in your workflow does not include these newer inputs yet.
+
+- Update your `uses:` reference to a newer ref that includes `request_timeout` and `push_retry_count` in `action.yml`.
+- If you must stay on an older ref, remove these two keys from `with:` to avoid warnings.
+
+You can always check support by opening the `action.yml` file at the exact ref you are using and confirming the input names.
+
 ## Advanced usage examples
 
 Click to expand:
