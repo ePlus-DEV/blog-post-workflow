@@ -77,6 +77,20 @@ const retryConfig = {
 	factor: 1,
 	minTimeout: Number.parseInt(core.getInput('retry_wait_time'), 10) * 1000,
 };
+const REQUEST_TIMEOUT = Number.parseInt(core.getInput('request_timeout'), 10) || 30;
+const RETRY_WAIT_SECONDS = retryConfig.minTimeout / 1000;
+
+core.info(
+	`Feed request config -> timeout: ${REQUEST_TIMEOUT}s, retries: ${retryConfig.retries}, retry_wait_time: ${RETRY_WAIT_SECONDS}s`,
+);
+if (retryConfig.retries > 0) {
+	const worstCasePerFeedSeconds =
+		REQUEST_TIMEOUT * (retryConfig.retries + 1) +
+		RETRY_WAIT_SECONDS * retryConfig.retries;
+	core.info(
+		`Estimated worst-case wait per feed: ~${worstCasePerFeedSeconds}s before moving on.`,
+	);
+}
 
 core.setSecret(GITHUB_TOKEN);
 
@@ -142,9 +156,39 @@ const sanitizeXml = (xmlText) =>
 		.join('')
 		.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, '&amp;');
 
-const parseFeed = async (siteUrl) => {
+const fetchFeedXml = async (siteUrl) => {
+	const controller = new AbortController();
+	const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT * 1000);
+
 	try {
-		return await parser.parseURL(siteUrl);
+		const response = await fetch(siteUrl, {
+			headers: {
+				'User-Agent': userAgent,
+				Accept: acceptHeader,
+			},
+			signal: controller.signal,
+		});
+
+		if (!response.ok) {
+			throw new Error(`Status code ${response.status}`);
+		}
+		return response.text();
+	} catch (err) {
+		if (err.name === 'AbortError') {
+			throw new Error(
+				`Request timeout after ${REQUEST_TIMEOUT}s while fetching ${siteUrl}`,
+			);
+		}
+		throw err;
+	} finally {
+		clearTimeout(timeout);
+	}
+};
+
+const parseFeed = async (siteUrl) => {
+	const xmlText = await fetchFeedXml(siteUrl);
+	try {
+		return await parser.parseString(xmlText);
 	} catch (err) {
 		if (!isXmlParseError(err)) {
 			throw err;
@@ -152,16 +196,6 @@ const parseFeed = async (siteUrl) => {
 		core.warning(
 			`XML parse failed for ${siteUrl}. Retrying with sanitized XML fallback.`,
 		);
-		const response = await fetch(siteUrl, {
-			headers: {
-				'User-Agent': userAgent,
-				Accept: acceptHeader,
-			},
-		});
-		if (!response.ok) {
-			throw new Error(`Status code ${response.status}`);
-		}
-		const xmlText = await response.text();
 		return parser.parseString(sanitizeXml(xmlText));
 	}
 };
