@@ -130,11 +130,17 @@ const sanitizeXml = (xmlText) =>
 	xmlText
 		.replace(/^\uFEFF/, '')
 		.replace(/^[^<]*/, '')
-		.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g, '')
-		.replace(
-			/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g,
-			'&amp;',
-		);
+		.split('')
+		.filter((char) => {
+			const charCode = char.charCodeAt(0);
+			// XML 1.0 valid control chars: tab(9), LF(10), CR(13)
+			if (charCode <= 31 || charCode === 127) {
+				return charCode === 9 || charCode === 10 || charCode === 13;
+			}
+			return true;
+		})
+		.join('')
+		.replace(/&(?!(?:amp|lt|gt|quot|apos|#\d+|#x[\dA-Fa-f]+);)/g, '&amp;');
 
 const parseFeed = async (siteUrl) => {
 	try {
