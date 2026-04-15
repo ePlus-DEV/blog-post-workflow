@@ -46,8 +46,9 @@
 
 7. Go to repository settings, Click on Actions > General. Update the "Workflow permissions" to "Read and write permissions". Click on save.
 
-   ![Workflow permissions](https://github.com/ePlus-DEV/blog-post-workflow/assets/8397274/26d4c089-dc58-4309-b65a-2acb9a3c08ba)
-8. Wait for it to run automatically, or you can also trigger it manually to see the result instantly. To trigger the workflow manually, please follow the steps in the [video](https://www.youtube.com/watch?v=ECuqb5Tv9qI&t=272s).
+   ![Workflow permissions](https://github.com/user-attachments/assets/843b73ad-6fb9-48f0-aa93-8672dbd1cc3a)
+   
+9. Wait for it to run automatically, or you can also trigger it manually to see the result instantly. To trigger the workflow manually, please follow the steps in the [video](https://www.youtube.com/watch?v=ECuqb5Tv9qI&t=272s).
 
 ## Options
 
